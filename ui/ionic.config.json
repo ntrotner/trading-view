@@ -1,7 +1,0 @@
-{
-  "name": "trading-view",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "angular"
-}
