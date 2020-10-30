@@ -14,10 +14,7 @@
     "lib": [
       "es2018",
       "dom"
-    ],
-    "paths": {
-      "@trading-schemas": ["../schemas/index"] //e.g: import { ... } from '@trading-schemas';
-    }
+    ]
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
