@@ -15,9 +15,9 @@ export class RequestsService {
    * Native HTTP client will be added
    * @param url 
    */
-  getRequestAngular(url:string):Promise<Object>{
+  getRequestAngular(url:string, headers):Promise<Object>{
     console.log('exectute requests method')
-    return this.http.get(url).toPromise().then(
+    return this.http.get(url,headers).toPromise().then(
         resp => Promise.resolve(resp)
       ).catch(
         err => Promise.resolve(err)
