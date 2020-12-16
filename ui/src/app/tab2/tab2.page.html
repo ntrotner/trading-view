@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Tab 2
+      Portfolio
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -9,9 +9,81 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Tab 2</ion-title>
+      <ion-title size="large">Portfolio</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Tab 2 page"></app-explore-container>
+  <ion-refresher slot="fixed" disabled="false"
+    (ionRefresh)="selectFiatCurrency({ detail: { value: fiatString.toLowerCase() } }, $event)">
+    <ion-refresher-content>
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div>
+    <ion-list *ngIf="portfolioList | async as portfolio">
+
+      <ion-list-header class="header" lines="inset">
+        <ion-grid class="selectionbar">
+          <ion-row>
+            <ion-col>
+              <div>
+                <ion-button class="outerselect" [style.--padding-start]="0" [style.--padding-end]="0">
+                  <ion-select class="currencySelect" value="{{currencyList[0].short}}"
+                    (ionChange)="selectFiatCurrency($event);">
+                    <ion-select-option *ngFor="let currency of currencyList" value="{{currency.short}}">
+                      {{currency.short.toUpperCase()}}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-button>
+              </div>
+            </ion-col>
+            <ion-col>
+              <div>
+                <ion-button class="outerselect" [style.--padding-start]="0" [style.--padding-end]="0">
+                  <ion-select class="sortSelect" value="{{sortingOption[0].id}}" (ionChange)="selectSorting($event);">
+                    <ion-select-option *ngFor="let option of sortingOption" value="{{option.id}}">
+                      {{option.designation}}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-button>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-list-header>
+
+      <ion-item>
+        <div class="chart">
+          <h3 class="cumulatedTitle">{{calculatePortfolioValue(portfolio)}}</h3>
+          <canvas #doughnutPie></canvas>
+        </div>
+      </ion-item>
+
+      <div>
+        <ion-card *ngFor="let entry of portfolio.positions">
+          <ion-item lines="none">
+            <img slot="start" src="svgcolor/{{entry.id}}.svg">
+
+            <div
+              *ngIf="(calculateValueString(entry.id, entry.amount) !== '') || (entry.id === fiatString.toLowerCase()); then displayboth else displayone">
+            </div>
+
+            <ng-template #displayboth>
+              <ion-label>{{entry.amount.toFixed(2)}} {{entry.id.toUpperCase()}} </ion-label>
+              <ion-label slot="end"> {{calculateValueString(entry.id, entry.amount)}} </ion-label>
+            </ng-template>
+
+            <ng-template #displayone>
+              <ion-label>{{entry.amount.toFixed(2)}} {{entry.id.toUpperCase()}} </ion-label>
+              <ion-label slot="end">
+                <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+              </ion-label>
+            </ng-template>
+
+          </ion-item>
+        </ion-card>
+      </div>
+    </ion-list>
+  </div>
+
 </ion-content>
