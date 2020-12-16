@@ -15,7 +15,6 @@ export class RequestsService {
   universalRequest(url:string):Promise<Object>{
     //check for platform
     let platforms = this._determinePlatforms()
-    alert(platforms)
     if(platforms.includes('cordova')){//this can only trigger on an actual android device, 'android' can still trigger in browser
       return this._getRequestNative(url)
     }else{//triggers in browser
