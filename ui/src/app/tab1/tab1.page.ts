@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { RequestsService } from '../requests/requests.service'
+import { Chart } from 'chart.js';
+import 'chartjs-plugin-labels';
+import { allowedCurrencySwaps } from '../../../../schemas/allowedCurrecySwaps';
 
 @Component({
   selector: 'app-tab1',
