@@ -63,7 +63,7 @@
         <ion-card *ngFor="let entry of portfolio.positions">
           <ion-item lines="none">
             <img slot="start" src="svgcolor/{{entry.id}}.svg">
-
+            
             <div
               *ngIf="(calculateValueString(entry.id, entry.amount) !== '') || (entry.id === fiatString.toLowerCase()); then displayboth else displayone">
             </div>
