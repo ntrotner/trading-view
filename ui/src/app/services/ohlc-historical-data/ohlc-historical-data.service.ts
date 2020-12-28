@@ -27,7 +27,7 @@ export class OhlcHistoricalDataService {
    * @param limit number of candlesticks, minimum 1, maximum 1000
    * @param dataType high, low, open, close, timestamp, volume
    */
-  async numberArrayFromOHLC(tradingPair: string, step:number, limit:number, dataType: string):Promise<Array<Number>>{
+  async numberArrayFromOHLC(tradingPair: string, step:number, limit:number, dataType: string):Promise<Array<string>>{
     let ohlcData = await this.getOHLCData(tradingPair,step,limit)
     //initialize number array and fill it
     let numberArray = []

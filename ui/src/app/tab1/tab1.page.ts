@@ -5,6 +5,7 @@ import { Chart } from 'chart.js';
 import 'chartjs-plugin-labels';
 import { allowedCurrencySwaps } from '../../../../schemas/allowedCurrecySwaps';
 import { chartOverviewColors } from '../../../../schemas/colors'
+import { cryptoCurrencies } from '../../../../schemas/cryptocurrency'
 
 @Component({
   selector: 'app-tab1',
@@ -15,11 +16,11 @@ export class Tab1Page {
 
   constructor(private requerster:RequestsService, private historicalData: OhlcHistoricalDataService) {}
 
+  //displayed currencies
+  displayedCurrencies:Array<Object> = cryptoCurrencies;
   
 
   async test(){
-    var ctx = document.getElementById('myChart')
-    console.log(ctx)
   
     this.historicalData.getOHLCData('btceur',900,12).then(
       resp => console.log(resp)
@@ -27,8 +28,27 @@ export class Tab1Page {
     let data = await this.historicalData.numberArrayFromOHLC('usdceur',900,96,'close')
     console.log(data)
 
+    //initialize chart references
+    let charts = []
+    this.displayedCurrencies.forEach(currency => {
+      charts.push(document.getElementById(currency['short']))
+    });
+    //fetch data
+    console.log(charts)
+    
+    this.displayedCurrencies.forEach(currency => {
+      this.historicalData.numberArrayFromOHLC(currency['short']+'eur',900,90,'close').then(
+        response => {
+          this.buildOverviewLineChart(charts[this.displayedCurrencies.indexOf(currency)],response)
+        }
+      )
+    });
+    
+    
+  }
 
-    this.buildOverviewLineChart(ctx,data)
+  ionViewDidEnter(){
+    this.test()
   }
 
 
@@ -37,7 +57,7 @@ export class Tab1Page {
    * @param htmlReference reference in html code (document.getElementById...)
    * @param displayNumbers data array to be displayed
    */
-  buildOverviewLineChart(htmlReference:HTMLElement, displayNumbers:Array<Number>){
+  buildOverviewLineChart(htmlReference:HTMLElement, displayNumbers:Array<string>){
     //determine line and background colors
     let chartlineColor = chartOverviewColors['dump']['chartline']
     let backgroundColor = chartOverviewColors['dump']['background']
@@ -92,8 +112,9 @@ export class Tab1Page {
    * Helper function for chart generation. Compares the first value of an array to its last value.
    * @param data array of numbers
    */
-  _doesItPump(data:Array<Number>):Boolean{
-    if(data[0] <= data[data.length - 1]){
+  _doesItPump(data:Array<string>):Boolean{
+    
+    if(parseFloat(data[0]) <= parseFloat(data[data.length - 1])){
       return true
     }else{
       return false
