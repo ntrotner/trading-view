@@ -178,6 +178,6 @@ export class PortfolioService {
    * emits the up to date version of the portfolio
    */
   public emitPortfolio(): void {
-    this.saveHook();
+    this.observablePortfolio.next(this.loadedPortfolio);
   }
 }
