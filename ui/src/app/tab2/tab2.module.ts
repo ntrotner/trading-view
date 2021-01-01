@@ -7,6 +7,8 @@ import { Tab2Page } from './tab2.page';
 import { ExploreContainerComponentModule } from '../explore-container/explore-container.module';
 
 import { Tab2PageRoutingModule } from './tab2-routing.module';
+import { ChartCurrentComponent } from '../chart-current/chart-current.component';
+import { ChartHistoryComponent } from '../chart-history/chart-history.component';
 
 @NgModule({
   imports: [
@@ -16,6 +18,6 @@ import { Tab2PageRoutingModule } from './tab2-routing.module';
     ExploreContainerComponentModule,
     Tab2PageRoutingModule
   ],
-  declarations: [Tab2Page]
+  declarations: [Tab2Page, ChartCurrentComponent, ChartHistoryComponent]
 })
 export class Tab2PageModule {}
