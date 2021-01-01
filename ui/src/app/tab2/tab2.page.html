@@ -53,10 +53,49 @@
       </ion-list-header>
 
       <ion-item>
-        <div class="chart">
-          <h3 class="cumulatedTitle">{{calculatePortfolioValue(portfolio)}}</h3>
-          <canvas #doughnutPie></canvas>
-        </div>
+        <ion-grid>
+          <ion-row>
+            <div class="segmentHistory">
+              <ion-segment class="segmentButtons" [value]="sectionValue" (ionChange)="segmentChanged($event)">
+                <ion-segment-button value="current">
+                  <ion-label>Current</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="history">
+                  <ion-label>History</ion-label>
+                </ion-segment-button>
+              </ion-segment>
+            </div>
+          </ion-row>
+
+          <ion-row>
+
+            <div class="chart">
+              <div *ngIf="accumulatedValue; then displayvalue else displayskeleton">
+              </div>
+
+              <ng-template #displayvalue>
+                <h3 *ngIf="accumulatedValue" class="cumulatedTitle">
+                  {{accumulatedValue.toFixed(2)}}
+                  {{this.fiatString.toUpperCase()}}
+                </h3>
+              </ng-template>
+
+
+              <ng-template #displayskeleton>
+                <h3>
+                  <ion-skeleton-text animated style="width: 100%; height: 100%;"></ion-skeleton-text>
+                </h3>
+              </ng-template>
+
+              <div>
+                <app-chart-current [fiatString]="fiatString" [fiatExchange]=fiatExchange #currentChart>
+                </app-chart-current>
+                <app-chart-history [fiatString]="fiatString" [fiatExchange]=fiatExchange #historyChart>
+                </app-chart-history>
+              </div>
+            </div>
+          </ion-row>
+        </ion-grid>
       </ion-item>
 
       <div>
@@ -70,7 +109,9 @@
 
             <ng-template #displayboth>
               <ion-label>{{entry.amount.toFixed(2)}} {{entry.id.toUpperCase()}} </ion-label>
-              <ion-label slot="end"> {{calculateValueString(entry.id, entry.amount)}} </ion-label>
+              <div *ngIf="entry.id !== fiatString">
+                <ion-label slot="end"> {{calculateValueString(entry.id, entry.amount)}} </ion-label>
+              </div>
             </ng-template>
 
             <ng-template #displayone>
