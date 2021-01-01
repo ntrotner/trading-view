@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { Chart } from 'chart.js';
+import 'chartjs-plugin-labels';
 import { colors } from '../../../../schemas/colors';
-import { portfolio } from '../../../../schemas/portfolio';
 import { PortfolioService } from '../services/portfolio/portfolio.service';
 
 @Component({

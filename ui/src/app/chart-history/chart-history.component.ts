@@ -111,6 +111,7 @@ export class ChartHistoryComponent {
           return { t: value.date.toLocaleString(), y: value[this.fiatString] }
         });
         set.borderColor = colors[3];
+        set.pointRadius = 2;
       });
       this.line.update();
     } catch { }
