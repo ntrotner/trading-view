@@ -1,4 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
+import { NavController } from '@ionic/angular';
 import { RequestsService } from '../services/requests/requests.service'
 import { OhlcHistoricalDataService } from '../services/ohlc-historical-data/ohlc-historical-data.service'
 import { Chart } from 'chart.js';
@@ -14,13 +15,13 @@ import { cryptoCurrencies } from '../../../../schemas/cryptocurrency'
 })
 export class Tab1Page {
 
-  constructor(private requerster:RequestsService, private historicalData: OhlcHistoricalDataService) {}
+  constructor(private requerster:RequestsService, private historicalData: OhlcHistoricalDataService, private navControl: NavController) {}
 
   //displayed currencies
   displayedCurrencies:Array<Object> = cryptoCurrencies;
   
 
-  async test(){
+  async load(){
   
     this.historicalData.getOHLCData('btceur',900,12).then(
       resp => console.log(resp)
@@ -48,7 +49,12 @@ export class Tab1Page {
   }
 
   ionViewDidEnter(){
-    this.test()
+    this.load()
+  }
+
+
+  test(){
+    //this.navControl.navigateForward('detail')
   }
 
 
