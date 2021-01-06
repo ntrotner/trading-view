@@ -13,24 +13,26 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-button color="secondary" (click)="test()"[routerLink]="['./detail']">Secondary</ion-button>
-
   <ion-list>
-    <ion-card *ngFor="let currency of displayedCurrencies" class="currencyCard">
-      <div>
-        <canvas id="{{currency.short}}" width="400" height="150"></canvas>
-      </div>
+    <ion-item *ngFor="let currency of displayedCurrencies" lines="none" class="currencyItem">
+      <ion-card button [routerLink]="['./detail/',{currency:currency.short}]" class="currencyCard">
+  
+          <ion-card-content>
+            <ion-title style="overflow: hidden;"> 
+              <img src="svgcolor/{{currency.short}}.svg" style=" float:left;">
+              <div style="float:left;">
+                &nbsp;{{currency.long}}
+              </div>
+            </ion-title>
+          </ion-card-content>
 
-        <ion-card-content>
-          <ion-title style="overflow: hidden;"> 
-            <img src="svgcolor/{{currency.short}}.svg" style=" float:left;">
-            <div style="float:left;">
-              {{currency.long}}
-            </div>
-          </ion-title>
-        </ion-card-content>
-
-    </ion-card>
+          <div>
+            <canvas id="{{currency.short}}" width="400" height="150"></canvas>
+          </div>
+  
+      </ion-card>
+    </ion-item>
+    
   </ion-list>
 
 </ion-content>

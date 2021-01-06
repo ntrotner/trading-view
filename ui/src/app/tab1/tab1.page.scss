@@ -1,3 +1,9 @@
 .currencyCard {
-    padding: 1em;
+    padding: 0.5em;
+    padding-right: 1em; //needs an extra padding on the right side because for some reason the chart is always a little offset
+    border-left: 1em;
+    border-right: 1em;
+}
+.currencyItem{
+    
 }

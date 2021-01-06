@@ -1,5 +1,4 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController } from '@ionic/angular';
 import { RequestsService } from '../services/requests/requests.service'
 import { OhlcHistoricalDataService } from '../services/ohlc-historical-data/ohlc-historical-data.service'
 import { Chart } from 'chart.js';
@@ -15,7 +14,7 @@ import { cryptoCurrencies } from '../../../../schemas/cryptocurrency'
 })
 export class Tab1Page {
 
-  constructor(private requerster:RequestsService, private historicalData: OhlcHistoricalDataService, private navControl: NavController) {}
+  constructor(private requerster:RequestsService, private historicalData: OhlcHistoricalDataService) {}
 
   //displayed currencies
   displayedCurrencies:Array<Object> = cryptoCurrencies;
