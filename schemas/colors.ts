@@ -10,5 +10,10 @@ export const chartOverviewColors:Object = {
      dump:{
         chartline:'#BF3F3FFF', //red
         background:'#BF3F3F80' //transparent red
-     }
- }
+    }
+}
+
+export const candlestickColors:Object = {
+    pump:'#009933FF', //green
+    dump:'#B30000FF' //red
+}
