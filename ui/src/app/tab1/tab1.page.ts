@@ -6,6 +6,10 @@ import 'chartjs-plugin-labels';
 import { allowedCurrencySwaps } from '../../../../schemas/allowedCurrecySwaps';
 import { chartOverviewColors } from '../../../../schemas/colors'
 import { cryptoCurrencies } from '../../../../schemas/cryptocurrency'
+import { fiatCurrencies } from '../../../../schemas/fiatcurrency'
+import { timeframeOptions } from '../../../../schemas/timeframeOptions'
+import { LiveDataBitstampService } from '../services/live-data-bitstamp/live-data-bitstamp.service'
+import { observable } from 'rxjs';
 
 @Component({
   selector: 'app-tab1',
@@ -14,47 +18,78 @@ import { cryptoCurrencies } from '../../../../schemas/cryptocurrency'
 })
 export class Tab1Page {
 
-  constructor(private requerster:RequestsService, private historicalData: OhlcHistoricalDataService) {}
+  constructor(private requerster:RequestsService, private historicalData: OhlcHistoricalDataService, private liveData:LiveDataBitstampService) {
+    //initialize default selected values for fiat and timeframe
+    this.selectedFiatCurrency = fiatCurrencies[0]
+    this.selectedTimeframe = timeframeOptions[0].values
+  }
 
-  //displayed currencies
-  displayedCurrencies:Array<Object> = cryptoCurrencies;
+  //displayable crypto currencies
+  cryptoCurrencies:Array<Object> = cryptoCurrencies;
+  //selectable fiat currencies
+  fiatCurrencies:Array<Object> = fiatCurrencies
+  //selectable timeframes
+  timeframes:Array<Object> = timeframeOptions
+  //displayable card data
+  cardData:Map<string,{value:number, change:number}> = new Map()
+  //currently selected fiat currency and timeframe
+  selectedFiatCurrency:{long:string, short:string}
+  selectedTimeframe:{step:number, limit:number}
   
 
-  async load(){
-  
-    this.historicalData.getOHLCData('btceur',900,12).then(
-      resp => console.log(resp)
-    )
-    let data = await this.historicalData.numberArrayFromOHLC('usdceur',900,96,'close')
-    console.log(data)
+  /**
+   * 
+   * @param fiatCurrency {long:string, short:string}
+   * @param timeframe {step:number, limit:number}
+   */
+  initializeView(fiatCurrency:{long:string, short:string}, timeframe:{step:number, limit:number}){
 
     //initialize chart references
     let charts = []
-    this.displayedCurrencies.forEach(currency => {
+    this.cryptoCurrencies.forEach(currency => {
       charts.push(document.getElementById(currency['short']))
     });
-    //fetch data
-    console.log(charts)
-    
-    this.displayedCurrencies.forEach(currency => {
-      this.historicalData.numberArrayFromOHLC(currency['short']+'eur',900,90,'close').then(
+    //fetch and process data, create charts
+    this.cryptoCurrencies.forEach(currency => {
+      this.historicalData.numberArrayFromOHLC(currency['short'] + fiatCurrency['short'], timeframe['step'], timeframe['limit'], 'close').then(
         response => {
-          this.buildOverviewLineChart(charts[this.displayedCurrencies.indexOf(currency)],response)
+          //assign data to charts
+          this.buildOverviewLineChart(charts[this.cryptoCurrencies.indexOf(currency)],response)
+          //fill card data
+          let latestValue = parseFloat(response[response.length-1])
+          let percentageChange = this._percentageChange(parseFloat(response[0]), latestValue, 2)
+          this.cardData.set(currency['short'] ,{value:latestValue, change:percentageChange})
         }
       )
     });
     
-    
+  }
+
+
+  /**
+   * Wrapper function for initializeView() that updates global variables.
+   * @param fiatCurrency {long:string, short:string}
+   * @param timeframe {step:number, limit:number}
+   */
+  update(fiatCurrency:{long:string, short:string}, timeframe:{step:number, limit:number}, event?){
+    console.log('attepting update',fiatCurrency,timeframe)
+    //update global variables
+    this.selectedFiatCurrency = fiatCurrency
+    this.selectedTimeframe = timeframe
+    //update view elements
+    this.initializeView(fiatCurrency, timeframe)
+  }
+
+  updateSelectedFiatCurrency(fiatCurrency:{long:string, short:string}, event?){
+    this.selectedFiatCurrency = fiatCurrency
+    console.log(this.selectedFiatCurrency,fiatCurrency)
+    this.initializeView(fiatCurrency, this.selectedTimeframe)
   }
 
   ionViewDidEnter(){
-    this.load()
+    this.update(this.selectedFiatCurrency,this.selectedTimeframe)
   }
 
-
-  test(){
-    //this.navControl.navigateForward('detail')
-  }
 
 
   /**
@@ -124,6 +159,18 @@ export class Tab1Page {
     }else{
       return false
     }
+  }
+
+
+  /**
+   * Calculates a rounded percentage change of two values in a timeframe.
+   * One might need to apply .toFixed() method on a result for visual purposes.
+   * @param firstValue first value of timeframe
+   * @param recentValue latest value of timeframe
+   * @param decimalPlaces whole number of decimal places 
+   */
+  _percentageChange(firstValue:number, recentValue:number, decimalPlaces:number): number {
+    return Math.round((recentValue/firstValue - 1)*100*(10**decimalPlaces))/(10**decimalPlaces)
   }
 
 }

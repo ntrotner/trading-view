@@ -1,9 +1,18 @@
 .currencyCard {
-    padding: 0.5em;
-    padding-right: 1em; //needs an extra padding on the right side because for some reason the chart is always a little offset
-    border-left: 1em;
-    border-right: 1em;
+    padding-left: 0.5em;
+    padding-right: 1em;//larger right padding because chart is slightly offset for unknown reason
 }
-.currencyItem{
-    
+
+
+
+//properties below taken from portfolio page for unified styling
+.outerselect {
+    width: 100%;
+}
+.currencySelect {
+    padding-right: 7vw;
+    width: 75%;
+}
+.selectionbar, .header {
+    padding: 0 !important;
 }
