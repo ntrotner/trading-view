@@ -13,15 +13,20 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-list>
+  <ion-refresher slot="fixed" disabled="false"
+    (ionRefresh)="ionViewDidEnter($event)">
+    <ion-refresher-content>
+    </ion-refresher-content>
+  </ion-refresher>
 
+  <ion-list>
     <ion-list-header class="header" lines="inset">
       <ion-grid>
         <ion-row>
           <ion-col>
             <ion-button class="outerselect" [style.--padding-start]="0" [style.--padding-end]="0">
               <ion-select class="currencySelect" value="{{fiatCurrencies[0].short}}"
-                (ionChange)="updateSelectedFiatCurrency($event);">
+                (ionChange)="updateFiatCurrency($event);">
                 <ion-select-option *ngFor="let currency of fiatCurrencies" value="{{currency.short}}">
                   {{currency.short.toUpperCase()}}
                 </ion-select-option>
@@ -30,10 +35,10 @@
           </ion-col>
           <ion-col>
             <ion-button class="outerselect" [style.--padding-start]="0" [style.--padding-end]="0">
-              <ion-select class="currencySelect" value="{{timeframes[0].id}}"
-                (ionChange)="update(timeframe, selectFiatCurrency, $event);">
-                <ion-select-option *ngFor="let timeframe of timeframes" value="{{timeframe.id}}">
-                  {{timeframe.id.toUpperCase()}}
+              <ion-select class="currencySelect" value="{{timeframes[0]}}"
+                (ionChange)="updateTimeframe($event);">
+                <ion-select-option *ngFor="let timeframe of timeframes" value="{{timeframe}}">
+                  {{timeframe.toUpperCase()}}
                 </ion-select-option>
               </ion-select>
             </ion-button>
@@ -43,7 +48,7 @@
     </ion-list-header>
 
     <div>
-      <ion-card button *ngFor="let currency of cryptoCurrencies; let i=index" [routerLink]="['./detail/',{currency:currency.short}]" lines="none" class="currencyCard">
+      <ion-card button *ngFor="let currency of cryptoCurrencies; let i=index" [routerLink]="['./detail/',{currency:currency.short}]" lines="none" id="{{currency.short}}card" class="currencyCard">
 
         <ion-card-content>
           <ion-title style="overflow: hidden;"> 
@@ -54,28 +59,58 @@
           </ion-title>
         </ion-card-content>
 
-        <div>
-          <canvas id="{{currency.short}}" width="400" height="150"></canvas>
+        <div
+          *ngIf="(true); then available else unavailable">
         </div>
 
-        <div>
-          <ion-grid>
-            <ion-row>
-              <ion-col>
-                <ion-title>
-                  {{cardData?.get(currency.short)?.value.toFixed(2)}}
-                </ion-title>
-              </ion-col>
-              <ion-col>
-                <!--Getting that + sign infront of a positive number took a while.-->
-                <ion-title style="display: inline-block;">
-                  <div *ngIf="cardData?.get(currency.short)?.change > 0" style="float: left;">+</div>
-                  {{cardData?.get(currency.short)?.change.toFixed(2)}} %
-                </ion-title>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </div>
+        <ng-template #available>
+          <div>
+            <div>
+              <canvas id="{{currency.short}}" width="400" height="150"></canvas>
+            </div>
+            <div>
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-title>
+                      {{currencyCards?.get(currency.short)?.latest.toFixed(2)}} {{selectedFiatCurrency.toUpperCase()}}
+                    </ion-title>
+                  </ion-col>
+                  <ion-col>
+                    <ion-title style="display: inline-block;">
+                      <div *ngIf="currencyCards?.get(currency.short)?.change > 0" style="float: left;">+</div>
+                      {{currencyCards?.get(currency.short)?.change.toFixed(2)}} %
+                    </ion-title>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </div>
+          </div>
+        </ng-template>
+
+        <ng-template #unavailable>
+          <div>
+            <div>
+              <ion-skeleton-text animated style="width: 100%;"></ion-skeleton-text>
+            </div>
+            <div>
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-title>
+                      <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+                    </ion-title>
+                  </ion-col>
+                  <ion-col>
+                    <ion-title>
+                      <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+                    </ion-title>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </div>
+          </div>
+        </ng-template>
 
       </ion-card>
     </div>
