@@ -59,15 +59,15 @@
           </ion-title>
         </ion-card-content>
 
+        <div>
+          <canvas id="{{currency.short}}" width="400" height="150"></canvas>
+        </div>
+
         <div
-          *ngIf="(true); then available else unavailable">
+          *ngIf="(currencyCards?.get(currency.short)?.latest != undefined); then available else unavailable">
         </div>
 
         <ng-template #available>
-          <div>
-            <div>
-              <canvas id="{{currency.short}}" width="400" height="150"></canvas>
-            </div>
             <div>
               <ion-grid>
                 <ion-row>
@@ -85,14 +85,9 @@
                 </ion-row>
               </ion-grid>
             </div>
-          </div>
         </ng-template>
 
         <ng-template #unavailable>
-          <div>
-            <div>
-              <ion-skeleton-text animated style="width: 100%;"></ion-skeleton-text>
-            </div>
             <div>
               <ion-grid>
                 <ion-row>
@@ -109,12 +104,10 @@
                 </ion-row>
               </ion-grid>
             </div>
-          </div>
         </ng-template>
 
       </ion-card>
     </div>
-    
     
   </ion-list>
 

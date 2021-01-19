@@ -21,7 +21,6 @@ export class Tab1Page {
     //initialize default selected values for fiat and timeframe
     this.selectedFiatCurrency = fiatCurrencies[0].short
     this.selectedTimeframe = timeframeOptions.get('day')
-    
   }
 
   //displayable card data
@@ -38,19 +37,34 @@ export class Tab1Page {
   
 
   /**
-   * 
+   * Exexutes initializeView() method upon entering the view, changing selectable variables or on using ion-refresher.
+   * @param event 
+   */
+  ionViewDidEnter(event?){
+    this.initializeView(this.selectedFiatCurrency, this.selectedTimeframe)
+    //activate timeout in case this function is being used with ion-refresher
+    event ? setTimeout(() => { 
+      event.target.complete();
+    }, 1500) : 0;
+  }
+
+
+  /**
+   * Initializes card elements and fills them with fresh data.
    * @param fiatCurrency eur, gbp, usd
    * @param timeframe {step:number, limit:number}
    */
   initializeView(fiatCurrency:string, timeframe:{step:number, limit:number}){
     //initialize chart references
     let references = this._htmlChartReferences()
-    //fetch and process data, create charts
+    //clear card data of potential deprecated data
+    //then fetch and process data, create charts
     this.cryptoCurrencies.forEach(currency => {
+      this._clearCardData(currency['short'])
       this._assignCardData(currency['short'], fiatCurrency, timeframe, references.get(currency['short']))
     });
   }
-
+  
 
   /**
    * Assigns chart, latest, change data to global card map.
@@ -60,7 +74,6 @@ export class Tab1Page {
    * @param htmlReference 
    */
   _assignCardData(cryptoCurreny:string, fiatCurrency:string, timeframe:{step:number, limit:number}, htmlReference:HTMLElement){
-    try{
       //first check if currency pair is a valid one, if yes proceed to fill card and chart with data
       if(allowedCurrencySwaps.includes(cryptoCurreny + fiatCurrency)){
         this.historicalData.numberArrayFromOHLC(cryptoCurreny + fiatCurrency, timeframe.step, timeframe.limit, 'close').then(
@@ -71,24 +84,35 @@ export class Tab1Page {
             let change = this._percentageChange(parseFloat(response[0]), latest, 2)
             this.currencyCards.set(cryptoCurreny, {chart:chart, latest:latest, change:change})
           }
+        ).catch(
+          error => {
+            //try again in 2.5 seconds
+            setTimeout(() => {
+              this._assignCardData(cryptoCurreny, fiatCurrency, timeframe, htmlReference)
+            }, 2500);
+          }
         )
       }else{//currency pair is invalid, fill card and chart accordingly
           let chart = this._buildOverviewLineChart(htmlReference, [], true, 'No data available.')
           this.currencyCards.set(cryptoCurreny, {chart:chart, latest:NaN, change:NaN})
       }
-    }catch{}
   }
 
 
   /**
    * Clear all the card data for a crypto currency.
+   * Clears chart, latest and change value.
    * @param cryptoCurreny 
    */
   _clearCardData(cryptoCurreny:string){
     let cardData = this.currencyCards.get(cryptoCurreny)
-    cardData.chart.clear()
-    cardData.latest = NaN
-    cardData.change = NaN
+    if(cardData == undefined){
+      //there is nothing to clear
+    }else{
+      cardData.chart.clear()
+      cardData.latest = undefined
+      cardData.change = undefined
+    }
   }
 
 
@@ -102,6 +126,7 @@ export class Tab1Page {
     });
     return chartRefereces
   }
+
 
 
   /**
@@ -125,17 +150,6 @@ export class Tab1Page {
     this.selectedTimeframe = timeframeOptions.get(event.detail.value)
     //initialize view again
     this.initializeView(this.selectedFiatCurrency, this.selectedTimeframe)
-  }
-
-
-  ionViewDidEnter(event?){
-    this.initializeView(this.selectedFiatCurrency, this.selectedTimeframe)
-    //activate timeout in case this function is being used with ion-refresher
-    event ? setTimeout(() => { 
-      event.target.complete();
-      this._clearCardData('eth') 
-      console.log(this.currencyCards.get('xmr'))
-    }, 1500) : 0;
   }
 
 
