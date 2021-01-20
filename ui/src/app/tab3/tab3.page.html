@@ -1,17 +1,60 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Tab 3
+      Trading History
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-list *ngIf="portfolioList | async as portfolio">
+    <ion-list-header lines="inset">
+      <ion-grid>
+        <ion-row>
+          <ion-col class="ion-align-items-center">
+            Exchange Rate
+          </ion-col>
+          <ion-col class="ion-align-items-center">
+            Buy Amount
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-list-header>
+    <ion-item *ngFor="let purchase of portfolio.purchaseHistory.slice().reverse()">
+      <img slot="start" src="svgcolor/{{purchase.from}}.svg">
+      <img slot="end" src="svgcolor/{{purchase.to}}.svg">
+      <ion-label class="label">
+        <div class="left">
+          {{purchase.rate}}
+          <sup>{{purchase.from.toUpperCase()}}</sup>/<sub>{{purchase.to.toUpperCase()}}</sub>
+        </div>
+        <div class="right">
+          {{purchase.amount}} {{purchase.to.toUpperCase()}}
+        </div>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 
-  <app-explore-container name="Tab 3 page"></app-explore-container>
 </ion-content>
+
+<ion-footer *ngIf="calculatedGains">
+  <ion-toolbar>
+    <ion-title>
+      <div class="profitButton">
+        <p class="profitlabel">Profit</p>
+        <ion-button class="outerselect" [style.--padding-start]="0" [style.--padding-end]="0">
+          <ion-select class="currencySelect" value="{{currencyList[0].short}}"
+            (ionChange)="selectFiatCurrency($event);">
+            <ion-select-option *ngFor="let currency of currencyList" value="{{currency.short}}">
+              {{currency.short.toUpperCase()}}
+            </ion-select-option>
+          </ion-select>
+        </ion-button>
+      </div>
+
+
+      <p class="profit" [ngStyle]="calculatedGains > 0 ? {'color':'green'} : {'color':'red'}">
+        {{calculatedGains.toFixed(2)}} {{fiatString.toUpperCase()}}</p>
+    </ion-title>
+  </ion-toolbar>
+</ion-footer>
