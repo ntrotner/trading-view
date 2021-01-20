@@ -31,7 +31,7 @@ export class Tab1Page {
   fiatCurrencies:Array<Object> = fiatCurrencies
   timeframes:Array<string> = Array.from(timeframeOptions.keys())
   
-  //selectable variables
+  // selectable variables
   selectedFiatCurrency:string
   selectedTimeframe:{step:number, limit:number}
   
