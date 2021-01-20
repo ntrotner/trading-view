@@ -28,7 +28,7 @@ export class Tab2Page implements OnDestroy {
   fiatExchange: { [key: string]: { price: number } } = {}; // key is currency 
   fiatString = this.currencyList[0].short;
   accumulatedValue: number;
-  sectionValue: string = 'current';
+  sectionValue: string;
 
   constructor(private portfolio: PortfolioService, private requestService: RequestsService, private network: Network) {
     // set observable for html async pipe
@@ -37,16 +37,24 @@ export class Tab2Page implements OnDestroy {
   }
 
   ionViewDidEnter() {
-    this.currentChart.createChart();
     this.historyChart.createLine();
-    this.segmentChanged({ detail: { value: this.sectionValue } });
+    this.currentChart.createChart();
+    this.segmentChanged({ detail: { value: 'current' } });
 
     /*
-     * first update hook that listens for changes to the portfolio
-     * second one exists in calculatePortfolioValue
+     * horrible code but I need to set a timer so that chart.js doesn't throw an error that is
+     *  caused by emitting portfolio values and "async" chart creation.
+     * This doesn't restrict the application in any way but it delays the portfolio updates
      */
-    this.subscriptions.add(this.portfolioList.subscribe((_) => this.updateViewContent()));
-    this.portfolio.emitPortfolio();
+    setTimeout(() => {
+      /*
+       * first update hook that listens for changes to the portfolio
+       * second one exists in calculatePortfolioValue
+       */
+      this.subscriptions.add(this.portfolioList.subscribe((_) => this.updateViewContent()));
+      this.portfolio.emitPortfolio();
+    }, 5000);
+
   }
 
   ngOnDestroy() {
@@ -87,19 +95,26 @@ export class Tab2Page implements OnDestroy {
       // skip if conversion between same currencies
       if (value.id === this.fiatString) return;
 
-      let swapString: string = `${value.id}${this.fiatString}`;
-
       // check for allowed currency string and send response
-      if (allowedCurrencySwaps.find((swapCombination) => swapCombination === swapString)) {
-        this.requestExchangeRate(swapString, value, false);
-      } else {
-        swapString = `${this.fiatString}${value.id}`;
-        this.requestExchangeRate(swapString, value, true);
-      }
+      this.decideCurrencySwapType(value);
     });
 
     // close spinning icon
     event ? setTimeout(() => { event.target.complete(); }, 1500) : 0;
+  }
+
+  /**
+   * check which swap string to send
+   * 
+   * @param value 
+   */
+  decideCurrencySwapType(value: position) {
+    this.fiatExchange[value.id] = { price: undefined };
+    if (allowedCurrencySwaps.find((swapCombination) => swapCombination === `${value.id}${this.fiatString}`)) {
+      this.requestExchangeRate(`${value.id}${this.fiatString}`, value, false);
+    } else if (allowedCurrencySwaps.find((swapCombination) => swapCombination === `${this.fiatString}${value.id}`)) {
+      this.requestExchangeRate(`${this.fiatString}${value.id}`, value, true);
+    }
   }
 
   /**
@@ -114,22 +129,22 @@ export class Tab2Page implements OnDestroy {
       this.requestService.universalRequest(`https://www.bitstamp.net/api/v2/ticker_hour/${swapString}/`)
         .then((response) => {
           // when requesting with smartphone the response is saved as a string in the 'data' key
-          if (response['data']) {
-            response = JSON.parse(response['data']);
-          }
+          if (response['data']) response = JSON.parse(response['data']);
+
           // when http request has failed then try again later
           if (response['ok'] === false) {
             setTimeout(() => {
               this.requestExchangeRate(swapString, value, inverse);
-            }, 3000);
+            }, 5000);
             return;
           }
 
           try {
             let exchangeValue = response['bid'];
+
             if (inverse) {
-              let calculatedExchangerate = Number((1 / Number(exchangeValue)).toFixed(3));
-              isNaN(calculatedExchangerate) ? 0 : this.fiatExchange[value.id] = { price: calculatedExchangerate }
+              let calculatedExchangeRate = Number((1 / Number(exchangeValue)).toFixed(3));
+              isNaN(calculatedExchangeRate) ? 0 : this.fiatExchange[value.id] = { price: calculatedExchangeRate }
             } else {
               isNaN(exchangeValue) ? 0 : this.fiatExchange[value.id] = { price: Number(exchangeValue) }
             }
@@ -150,14 +165,12 @@ export class Tab2Page implements OnDestroy {
    */
   calculatePortfolioValue(): void {
     try {
-      if (this.network.Connection.NONE === this.network.type) throw new Error('No Connection');
-
       let selectedFiatCurrency = this.portfolio.getTempPortfolio().positions.find((value) => value.id === this.fiatString);
 
       let accumulatedRelativeValue = this.portfolio.getTempPortfolio().positions
         .reduce<number>((accumulator: number, currentValue) =>
           accumulator + Number(this.calculateValueNumber(currentValue.id, currentValue.amount))
-          , selectedFiatCurrency ? selectedFiatCurrency.amount : 0);
+          , selectedFiatCurrency ? selectedFiatCurrency.amount : 0); // set default start value
       this.accumulatedValue = accumulatedRelativeValue;
     } catch {
       this.accumulatedValue = undefined;
@@ -183,43 +196,29 @@ export class Tab2Page implements OnDestroy {
       if (lastValueUpdate < 1000 * 60 * 2) return;
     }
 
-    // get missing exchanges
-    this.requestMissingFiatExchanges();
+    let history = {};
+    for (const currency of fiatCurrencies) {
+      // check if exchange exists, if not then abort calculation and request missing ones
+      if (!this.fiatExchange[currency.short]) {
+        this.decideCurrencySwapType(new position(currency.short, 0));
+        return;
+      }
 
-    // this try, catch is successfully executed if every position can be translated to every other fiat currency
-    try {
-      let history = {};
-      fiatCurrencies.forEach((currency) => {
-        history[currency.short] = accumulatedValue * (1 / this.fiatExchange[currency.short].price);
-      });
+      history[currency.short] = accumulatedValue * (1 / this.fiatExchange[currency.short].price);
+    }
 
-      let fiatExchangeWithEveryFiat = { ...this.fiatExchange }
-      fiatCurrencies.forEach((val) => fiatExchangeWithEveryFiat[val.short] = undefined);
+    let combinedPortfolioAndExchange = {};
+    Object.keys(this.fiatExchange).forEach((key) => combinedPortfolioAndExchange[`${key}`] = true);
+    this.portfolio.getTempPortfolio().positions.forEach((value) => combinedPortfolioAndExchange[`${value.id}`] = true);
 
-      // this check is done as there can be an exchange rate that is used as an placeholder without an value
-      let containsUndefined = Object.keys(this.fiatExchange).find((key) => !this.fiatExchange[key].price);
+    let existsUndefined = Object.keys(this.fiatExchange).find((value) => !this.fiatExchange[value].price);
 
-      // if every position got an exchange rate and can convert it to every fiat currency then proceed and add it to the history
-      Object.keys(history).length === fiatCurrencies.length && !containsUndefined && this.accumulatedValue &&
-        Object.keys(this.fiatExchange).length === Object.keys(fiatExchangeWithEveryFiat).length ?
-        this.portfolio.addHistory({ date: new Date(), ...history })
-        : 0;
-    } catch { }
-  }
-
-  /**
-   * requests missing fiat exchange rates to convert the accumulated value to other currencies
-   */
-  requestMissingFiatExchanges(): void {
-    if (this.portfolio.getTempPortfolio().positions.length === Object.keys(this.fiatExchange).length) {
-      let currencyConversionToGet = fiatCurrencies.filter((currency) => !this.fiatExchange[currency.short]);
-
-      currencyConversionToGet.forEach((currency) => {
-        allowedCurrencySwaps.includes(`${currency.short}${this.fiatString}`) ?
-          this.requestExchangeRate(`${currency.short}${this.fiatString}`, new position(currency.short, 0), false) :
-          this.requestExchangeRate(`${this.fiatString}${currency.short}`, new position(currency.short, 0), true)
-        this.fiatExchange[currency.short] = undefined;
-      });
+    // if every position got an exchange rate and can convert it to every fiat currency then proceed and add it to the history
+    if (Object.keys(history).length === fiatCurrencies.length && this.accumulatedValue && !existsUndefined &&
+      Object.keys(this.fiatExchange).length === Object.keys(combinedPortfolioAndExchange).length &&
+      !Object.keys(history).find((key) => history[key] == null)
+    ) {
+      this.portfolio.addHistory({ date: new Date(), ...history });
     }
   }
 
@@ -252,7 +251,9 @@ export class Tab2Page implements OnDestroy {
    * @param amount 
    */
   calculateValueString(id: string, amount: number): string {
-    return this.fiatExchange[id] ? `${(this.fiatExchange[id].price * amount).toFixed(2)} ${this.fiatString.toUpperCase()}` : ''
+    return this.fiatExchange[id] && this.fiatExchange[id].price ?
+      `${(this.fiatExchange[id].price * amount).toFixed(2)} ${this.fiatString.toUpperCase()}`
+      : ''
   }
 
   /**
@@ -262,7 +263,7 @@ export class Tab2Page implements OnDestroy {
    * @param amount 
    */
   calculateValueNumber(id: string, amount: number): number {
-    if (!this.fiatExchange[id]) { throw new Error('Could\'t get exchange rate') }
+    if (!this.fiatExchange[id] || !this.fiatExchange[id].price) return 0;
     return Number((this.fiatExchange[id].price * amount).toFixed(2));
   }
 }
