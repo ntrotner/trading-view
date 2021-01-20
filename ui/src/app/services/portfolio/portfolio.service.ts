@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { portfolio, position } from '../../../../../schemas/portfolio';
+import { portfolio, position, purchase } from '../../../../../schemas/portfolio';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export const PORTFOLIO_KEY = 'portfolio';
@@ -32,6 +32,14 @@ export class PortfolioService {
       new position('eth', 15),
       new position('pax', 25),
       new position('link', 30)
+    ], [
+      new purchase('eur', 'btc', 30000, 1.5),
+      new purchase('eur', 'ltc', 120, 25),
+      new purchase('eur', 'bch', 406, 30),
+      new purchase('eur', 'usd', 1.26, 5000),
+      new purchase('eur', 'eth', 1100, 15),
+      new purchase('eur', 'pax', 0.83, 25),
+      new purchase('eur', 'link', 16.84, 35)
     ]);
   }
 
@@ -88,10 +96,10 @@ export class PortfolioService {
    * 
    * ! the buyrate and amount are calculated to 10 decimal places !
    * 
-   * @param fromCurrency designation for currency with which you pay
-   * @param toCurrency design. for c. which you buy
-   * @param buyrate e.g 16000 as 1 btc = 16000 usd
-   * @param amount e.g. buy 2 btc
+   * @param fromCurrency designation for currency with which you pay e.g. btc
+   * @param toCurrency design. for c. which you buy e.g. eur
+   * @param buyrate e.g btc to eur 30000
+   * @param amount e.g. buy 5 eur 
    */
   public exchangeCurrencies(fromCurrency: string, toCurrency: string, buyrate: number, amount: number): boolean {
     buyrate = Number(buyrate.toFixed(10));
@@ -101,9 +109,13 @@ export class PortfolioService {
     const objCurrencyFrom = this.findCurrencyObject(fromCurrency);
 
     // check if enough resources are available to buy it
-    if (objCurrencyFrom.amount >= buyrate * amount) {
+    if (objCurrencyFrom.amount >= (amount / buyrate)) {
+      this.loadedPortfolio.purchaseHistory.push(
+        new purchase(fromCurrency, toCurrency, buyrate, amount)
+      );
+
       objCurrencyTo.amount += amount;
-      objCurrencyFrom.amount -= buyrate * amount;
+      objCurrencyFrom.amount -= amount / buyrate;
       this.saveHook();
       return true;
     } else {
