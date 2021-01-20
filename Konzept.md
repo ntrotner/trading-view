@@ -28,5 +28,6 @@ Für weitere Komponenten kann dies auch erforderlich werden, jedoch wird möglic
 
 ## Allgemeines
 Beteiligte Studenten: Frederic Heil, Nikita Trotner.
+Repository: https://gitlab.com/ntrotner/trading-view
 
 

@@ -3,7 +3,7 @@ import { Observable, Subscription } from 'rxjs';
 import { portfolio, position } from '../../../../schemas/portfolio';
 import { fiatCurrencies } from '../../../../schemas/fiatcurrency';
 import { PortfolioService } from '../services/portfolio/portfolio.service';
-import { RequestsService } from '../requests/requests.service';
+import { RequestsService } from '../services/requests/requests.service';
 import { allowedCurrencySwaps } from '../../../../schemas/allowedCurrecySwaps';
 import { sortingOptions } from '../../../../schemas/sortingOptions';
 import { Network } from '@ionic-native/network/ngx';
