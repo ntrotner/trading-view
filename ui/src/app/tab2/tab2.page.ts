@@ -192,8 +192,8 @@ export class Tab2Page implements OnDestroy {
         - new Date().getTime() // current time
       );
 
-      // if the last update was performed less than 2 mins ago then ignore it
-      if (lastValueUpdate < 1000 * 60 * 2) return;
+      // if the last update was performed less than 1 min ago then ignore it
+      if (lastValueUpdate < 1000 * 60 * 1) return;
     }
 
     let history = {};
