@@ -20,9 +20,10 @@ export class position {
 
 export class portfolio {
   public positions: position[];
-  public history: Array<{ date: Date, [key: string]: number | Date }> = [];
+  public history: Array<{ date: Date, [key: string]: number | Date }>;
 
   constructor(_positions?: position[]) {
     this.positions = _positions ? _positions : [];
+    this.history = [];
   }
 }

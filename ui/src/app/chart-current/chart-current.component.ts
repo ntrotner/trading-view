@@ -18,11 +18,6 @@ export class ChartCurrentComponent {
 
   constructor(private portfolio: PortfolioService) { }
 
-  ionViewDidEnter() {
-    this.createChart();
-    this.updateChart();
-  }
-
   /**
    * updated chart to segment
    * 
@@ -31,7 +26,6 @@ export class ChartCurrentComponent {
   public segmentChange(segment: string) {
     if (segment === 'current') {
       this.updateChart();
-
       this.doughnutPie.nativeElement.style.visibility = 'visible';
       this.doughnutPie.nativeElement.style.position = 'initial';
     } else {

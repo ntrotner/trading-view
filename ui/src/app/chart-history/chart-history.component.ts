@@ -17,11 +17,6 @@ export class ChartHistoryComponent {
 
   constructor(private portfolio: PortfolioService) { }
 
-  ionViewDidEnter() {
-    this.createLine();
-    this.updateLine();
-  }
-
   /**
    * updated chart to segment
    * 
@@ -97,7 +92,9 @@ export class ChartHistoryComponent {
           }
         }
       });
-    } catch { }
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   /**
@@ -108,7 +105,7 @@ export class ChartHistoryComponent {
       this.line.data.datasets.forEach((set) => {
         set.spanGaps = true;
         set.data = this.portfolio.getTempPortfolio().history.map((value) => {
-          return { t: value.date.toLocaleString(), y: value[this.fiatString] }
+          return { t: new Date(value.date).toISOString(), y: value[this.fiatString] }
         });
         set.borderColor = colors[3];
         set.pointRadius = 2;
