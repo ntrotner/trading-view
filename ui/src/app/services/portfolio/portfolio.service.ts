@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { portfolio, position } from '@trading-schemas';
+import { portfolio, position } from '../../../../../schemas/portfolio';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export const PORTFOLIO_KEY = 'portfolio';
@@ -23,29 +23,16 @@ export class PortfolioService {
    * returns default portfolio state
    */
   private defaultPortfolio(): portfolio {
-    return {
-      positions: [
-        this.defaultPosition('eur', 5000),
-        this.defaultPosition('btc', 1.5),
-        this.defaultPosition('ltc', 25),
-        this.defaultPosition('bch', 30),
-        this.defaultPosition('usd', 5000),
-        this.defaultPosition('eth', 15),
-        this.defaultPosition('pax', 25),
-        this.defaultPosition('link', 30),
-      ]
-    }
-  }
-
-
-  /**
-   * creates a default position with id and amount
-   * 
-   * @param id 
-   * @param amount 
-   */
-  private defaultPosition(id: string, amount: number): position {
-    return { id, amount }
+    return new portfolio([
+      new position('eur', 5000),
+      new position('btc', 1.5),
+      new position('ltc', 25),
+      new position('bch', 30),
+      new position('usd', 5000),
+      new position('eth', 15),
+      new position('pax', 25),
+      new position('link', 30)
+    ]);
   }
 
   /**
@@ -78,11 +65,21 @@ export class PortfolioService {
     if (!found) {
       // if not found then create it and set it as found
       found = this.loadedPortfolio.positions[
-        this.loadedPortfolio.positions.push(this.defaultPosition(id, 0)) - 1
+        this.loadedPortfolio.positions.push(new position(id, 0)) - 1
       ];
     }
     this.saveHook();
     return found;
+  }
+
+  /**
+   * add history input
+   * 
+   * @param currencyExchange 
+   */
+  public addHistory(currencyExchange: { date: Date, [key: string]: number | Date }) {
+    this.loadedPortfolio.history.push(currencyExchange);
+    this.saveHook();
   }
 
   /**
@@ -175,5 +172,12 @@ export class PortfolioService {
    */
   public getPortfolio(): Observable<portfolio> {
     return this.observablePortfolio.asObservable();
+  }
+
+  /**
+   * emits the up to date version of the portfolio
+   */
+  public emitPortfolio(): void {
+    this.observablePortfolio.next(this.loadedPortfolio);
   }
 }
