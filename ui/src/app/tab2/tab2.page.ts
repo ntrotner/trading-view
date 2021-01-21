@@ -29,6 +29,7 @@ export class Tab2Page implements OnDestroy {
   fiatString = this.currencyList[0].short;
   accumulatedValue: number;
   sectionValue: string;
+  sortType: string = sortingOptions[0].id;
 
   constructor(private portfolio: PortfolioService, private requestService: RequestsService, private network: Network) {
     // set observable for html async pipe
@@ -61,10 +62,14 @@ export class Tab2Page implements OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  selectSorting(item): void {
-    const sortType = item.detail.value;
+  selectSorting(item?): void {
+    this.sortType = item ? item.detail.value : this.sortType;
     // split string to prefix (that contains the criteria) and suffix (that contains the orientation)
-    this.portfolio.sortPortfolio(sortType.slice(0, -1), sortType.slice(-1) === 'a', { ...this.fiatExchange, [this.fiatString]: { price: 1 } });
+    this.portfolio.sortPortfolio(
+      this.sortType.slice(0, -1),
+      this.sortType.slice(-1) === 'a',
+      { ...this.fiatExchange, [this.fiatString]: { price: 1 } }
+    );
   }
 
   /**
@@ -73,6 +78,7 @@ export class Tab2Page implements OnDestroy {
   updateViewContent() {
     this.calculatePortfolioValue();
     this.calculateHistoryValue(this.accumulatedValue);
+    this.selectSorting();
     this.currentChart.updateChart();
     this.historyChart.updateLine();
   }
