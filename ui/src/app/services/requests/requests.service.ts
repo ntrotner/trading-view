@@ -46,7 +46,7 @@ export class RequestsService {
       resp => {
         let data = JSON.parse(resp['data'])
         Promise.resolve(data)
-      } //if succesful resolve object
+      }   //if succesful resolve object
     ).catch(
       err => Promise.resolve(err) //if unsuccessful resolve object as well for error handling
     )
