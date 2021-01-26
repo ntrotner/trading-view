@@ -43,7 +43,10 @@ export class RequestsService {
    */
   _getRequestNative(url:string):Promise<object>{
     return this.nativeHttp.get(url,{},{}).then(
-      resp => Promise.resolve(resp) //if succesful resolve object
+      resp => {
+        let data = JSON.parse(resp['data'])
+        Promise.resolve(data)
+      } //if succesful resolve object
     ).catch(
       err => Promise.resolve(err) //if unsuccessful resolve object as well for error handling
     )
