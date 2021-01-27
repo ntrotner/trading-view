@@ -4,6 +4,7 @@ import { Chart } from 'chart.js';
 import 'chartjs-plugin-labels';
 import { candlestickColors } from '../../../../../schemas/colors'
 import { OhlcHistoricalDataService } from '../../services/ohlc-historical-data/ohlc-historical-data.service'
+import { LiveDataBitstampService } from '../../services/live-data-bitstamp/live-data-bitstamp.service'
 
 @Component({
   selector: 'app-detail',
@@ -12,7 +13,7 @@ import { OhlcHistoricalDataService } from '../../services/ohlc-historical-data/o
 })
 export class DetailPage implements OnInit {
 
-  constructor(private activatedRoute: ActivatedRoute, private historicalData: OhlcHistoricalDataService) { }
+  constructor(private activatedRoute: ActivatedRoute, private historicalData: OhlcHistoricalDataService, private liveData: LiveDataBitstampService) { }
 
   async ngOnInit() {
     this.activatedRoute.params.subscribe(
@@ -26,6 +27,12 @@ export class DetailPage implements OnInit {
         this.buildCandlestickChart(document.getElementById('candlestick'), openCloseBars, highLowBars, barColors)
       }
     )
+    let test = this.liveData.liveSellBuy('btceur',1)
+      test.subscribe(
+        data => console.log(data),
+        error => console.log(error),
+        ()=>console.log('done')
+      )
   }
 
   buildCandlestickChart(htmlReference:HTMLElement, openCloseBars: Array<Array<any>>, highLowBars: Array<Array<any>>, barColors:Array<string>){
