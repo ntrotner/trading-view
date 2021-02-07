@@ -4,10 +4,10 @@ import { Chart } from 'chart.js';
 import 'chartjs-plugin-labels';
 import { candlestickColors } from '../../../../../schemas/colors'
 import { candlestickOptions } from '../../../../../schemas/timeframeOptions'
+import { fiatCurrencies } from '../../../../../schemas/fiatcurrency'
 import { allowedCurrencySwaps } from '../../../../../schemas/allowedCurrecySwaps'
 import { OhlcHistoricalDataService } from '../../services/ohlc-historical-data/ohlc-historical-data.service'
 import { LiveDataBitstampService } from '../../services/live-data-bitstamp/live-data-bitstamp.service'
-import { error } from 'protractor';
 
 @Component({
   selector: 'app-detail',
@@ -17,7 +17,9 @@ import { error } from 'protractor';
 export class DetailPage implements OnInit {
 
   constructor(private activatedRoute: ActivatedRoute, private historicalData: OhlcHistoricalDataService, private liveData: LiveDataBitstampService) { 
-
+    //assign all selection options before lifecycle starts
+    this.candleTimes = Array.from(candlestickOptions.keys())
+    this.fiatCurrencies = fiatCurrencies
   }
 
   //displayable static data (charts, high-low, volume)
@@ -26,27 +28,32 @@ export class DetailPage implements OnInit {
   //displayable live buy sell values
   liveTrading:{buy:number | null, sell:number | null} = {buy:null, sell:null}
 
-  //immutable variable
+  //site variable
   cryptoCurrency:string
 
-  //selectable variables
+  //all selectable options
+  candleTimes:Array<string> = []
+  fiatCurrencies:Array<any> = []
+
+  //selected variables
   selectedFiatCurrency:string
   selectedCandleTime:{step:number, display:object}
+  selectedCandleSelection:string = '1 hour'
 
   ngOnInit() {
     this.activatedRoute.params.subscribe(
       data => {
         this.cryptoCurrency = data['currency']
         this.selectedFiatCurrency = data['fiat']
-        this.selectedCandleTime = candlestickOptions.get('15 min')
+        this.selectedCandleTime = candlestickOptions.get(this.selectedCandleSelection)
       }
     )
   }
 
-  ionViewDidEnter(){
+  ionViewDidEnter(event?){
     console.log('view enter')
     //clear global variable of potenial deprecated data
-    this._clearStaticData()
+    this._clearAllData()
     //determine if currency swap is allowed
     let currencySwapAllowed = allowedCurrencySwaps.includes(this.cryptoCurrency + this.selectedFiatCurrency)
     //fetch data
@@ -71,13 +78,56 @@ export class DetailPage implements OnInit {
     }else{//otherwise display placeholders
       this.liveTrading = {buy:NaN, sell:NaN}
     }
+
+    //activate timeout in case this function is being used with ion-refresher
+    event ? setTimeout(() => {
+      event.target.complete();
+    }, 1500) : 0;
   }
 
+
+  
   ionViewDidLeave(){
     console.log('view leave')
+    this.unsubscribe()
+  }
+
+
+  /**
+   * Method to unsubscribe from current live data subscription.
+   * Must be used upon any update.
+   */
+  unsubscribe(){
     this.liveData.unsubscribeLiveSellBuy(this.cryptoCurrency + this.selectedFiatCurrency)
   }
 
+
+   /**
+   * Used within html. Updates view and values after currency change.
+   * @param event 
+   */
+  updateFiatCurrency(event?){
+    //unsubscribe from current live data
+    this.unsubscribe()
+    //update global variable
+    this.selectedFiatCurrency = event.detail.value
+    //initialize view again
+    this.ionViewDidEnter()
+  }
+
+  /**
+   * Used within html. Updates view and values after candle time selection change.
+   * @param event 
+   */
+  updateCandleSelection(event?){
+    //unsubscribe from current live data
+    this.unsubscribe()
+    //update globales
+    this.selectedCandleSelection = event.detail.value
+    this.selectedCandleTime = candlestickOptions.get(this.selectedCandleSelection)
+    //initialize view again
+    this.ionViewDidEnter()
+  }
 
   /**
    * Initializes global variable containing non-live data to be displayed.
@@ -119,9 +169,9 @@ export class DetailPage implements OnInit {
 
 
   /**
-   * Clear global variable containing non live data.
+   * Clear global variable containing non live data aswell as stored live data values.
    */
-  _clearStaticData(){
+  _clearAllData(){
     //clear charts of global variable
     let candlestick = this.staticData.candlestick
     let volume = this.staticData.volume
@@ -136,6 +186,9 @@ export class DetailPage implements OnInit {
     //clear highlow and total volume
     this.staticData.highlow = null
     this.staticData.totalvolume = null
+    //clear stored live data
+    this.liveTrading.buy = null
+    this.liveTrading.sell = null
   }
 
 
