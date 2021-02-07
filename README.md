@@ -18,6 +18,6 @@
 
 
 ## Screenshots
-![](pictures/portfolio1.png) ![](pictures/portfolio2.png)
+![](pictures/portfolio1.png)  ![](pictures/portfolio2.png) 
+![](./pictures/tradehistory.png)
 
-![](pictures/tradehistory.png)
