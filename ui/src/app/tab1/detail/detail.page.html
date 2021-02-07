@@ -7,8 +7,21 @@
 
 <ion-content>
 
+  
+
   <div>
     <canvas id="candlestick" width="400" height="300"></canvas>
   </div>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        Buy {{liveTrading.buy}}
+      </ion-col>
+      <ion-col>
+        Sell {{liveTrading.sell}}
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
 </ion-content>

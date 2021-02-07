@@ -48,7 +48,7 @@
     </ion-list-header>
 
     <div>
-      <ion-card button *ngFor="let currency of cryptoCurrencies; let i=index" [routerLink]="['./detail/',{currency:currency.short}]" lines="none" id="{{currency.short}}card" class="currencyCard">
+      <ion-card button *ngFor="let currency of cryptoCurrencies; let i=index" [routerLink]="['./detail/',{currency:currency.short,fiat:selectedFiatCurrency}]" lines="none" id="{{currency.short}}card" class="currencyCard">
 
         <ion-card-content>
           <ion-title style="overflow: hidden;"> 
