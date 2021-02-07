@@ -37,7 +37,7 @@
 
 </ion-content>
 
-<ion-footer *ngIf="calculatedGains">
+<ion-footer *ngIf="checkIfNumber(calculatedGains)">
   <ion-toolbar>
     <ion-title>
       <div class="profitButton">
@@ -53,7 +53,7 @@
       </div>
 
 
-      <p class="profit" [ngStyle]="calculatedGains > 0 ? {'color':'green'} : {'color':'red'}">
+      <p class="profit" [ngStyle]="calculatedGains >= 0 ? {'color':'green'} : {'color':'red'}">
         {{calculatedGains.toFixed(2)}} {{fiatString.toUpperCase()}}</p>
     </ion-title>
   </ion-toolbar>

@@ -10,7 +10,7 @@ import { PortfolioService } from '../services/portfolio/portfolio.service';
 })
 export class ChartHistoryComponent {
   @Input() fiatString: string;
-  @Input() fiatExchange: { [key: string]: { price: number } }; // key is currency 
+  @Input() fiatExchange: { [key: string]: { price: number } }; // key is currency
 
   @ViewChild('lineChart') lineChart: ElementRef;
   line: Chart;
@@ -19,8 +19,8 @@ export class ChartHistoryComponent {
 
   /**
    * updated chart to segment
-   * 
-   * @param segment 
+   *
+   * @param segment
    */
   public segmentChange(segment: string) {
     if (segment === 'history') {
@@ -43,7 +43,10 @@ export class ChartHistoryComponent {
         data: {
           labels: [],
           datasets: [{
-            data: []
+            data: [],
+            pointRadius: 1,
+            pointHoverRadius: 8,
+            pointHitRadius: 8
           }],
         },
         options: {
@@ -57,8 +60,8 @@ export class ChartHistoryComponent {
                 var label = tooltipItem[0].xLabel || '';
                 let dateLabel = new Date(label);
                 return label != '' ?
-                  `${dateLabel.getDay()}.${dateLabel.getMonth() + 1}.${dateLabel.getFullYear()} ` +
-                  `${dateLabel.getHours()}:${(dateLabel.getMinutes() < 10 ? '0' : '') + dateLabel.getMinutes()}`
+                  `${this.formatWithLeadingZero(dateLabel.getDate())}.${this.formatWithLeadingZero(dateLabel.getMonth() + 1)}.${dateLabel.getFullYear()} ` +
+                  `${dateLabel.getHours()}:${this.formatWithLeadingZero(dateLabel.getMinutes())}`
                   : label;
               },
             }
@@ -95,6 +98,16 @@ export class ChartHistoryComponent {
     } catch (e) {
       console.log(e);
     }
+  }
+
+
+  /**
+   * formats number to string with leading zero if its a single digit
+   *
+   * @param segment
+   */
+  public formatWithLeadingZero(dateNumber: number): string {
+    return (dateNumber < 10 ? '0' : '') + dateNumber
   }
 
   /**

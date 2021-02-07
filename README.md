@@ -12,6 +12,12 @@
 - `/ui` contains the actual project
 
 ## Start as PWA
-`cd ui & npm install & npm start`
+`cd ui && npm install && npm start`
 ## Native Android
-`cd ui & npm install & ionic cordova run android`
+`cd ui && npm install && ionic cordova run android`
+
+
+## Screenshots
+![](pictures/portfolio1.png) ![](pictures/portfolio2.png)
+
+![](pictures/tradehistory.png)

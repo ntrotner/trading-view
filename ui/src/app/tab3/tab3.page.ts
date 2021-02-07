@@ -25,7 +25,7 @@ export class Tab3Page {
 
   calculateGains(): number | boolean {
     let tempPortfolio = this.portfolio.getTempPortfolio();
-    if (tempPortfolio.history.length < 2 || !this.fiatString) return false;
+    if (tempPortfolio.history.length === 0) return false;
 
     const first = tempPortfolio.history[0];
     const last = tempPortfolio.history[tempPortfolio.history.length - 1];
@@ -36,6 +36,10 @@ export class Tab3Page {
   selectFiatCurrency(item): void {
     this.fiatString = item.detail.value;
     this.calculateGains();
+  }
+
+  checkIfNumber(input: any): boolean {
+    return typeof input === 'number';
   }
 
 }
