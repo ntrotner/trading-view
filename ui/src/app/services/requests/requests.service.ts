@@ -25,7 +25,7 @@ export class RequestsService {
 
   /**
    * Sends HTTP GET requests using the angular client. For testing purposes within the browser one needs to disable CORS with a plugin for example.
-   * @param url 
+   * @param url
    */
   _getRequestAngular(url:string):Promise<Object>{
     return this.angularHttp.get(url).toPromise().then(
@@ -39,13 +39,13 @@ export class RequestsService {
   /**
    * Sends HTTP GET requests using the native ionic client. This works on an Android phone or within a Cordova application.
    * It bypasses CORS policy so nothing has to be modified additionally.
-   * @param url 
+   * @param url
    */
   _getRequestNative(url:string):Promise<object>{
     return this.nativeHttp.get(url,{},{}).then(
       resp => {
         let data = JSON.parse(resp['data'])
-        Promise.resolve(data)
+        return Promise.resolve(data)
       } //if succesful resolve object
     ).catch(
       err => Promise.resolve(err) //if unsuccessful resolve object as well for error handling
@@ -61,5 +61,4 @@ export class RequestsService {
   }
 
 
-} 
-
+}

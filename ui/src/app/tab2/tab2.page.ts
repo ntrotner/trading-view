@@ -25,7 +25,7 @@ export class Tab2Page implements OnDestroy {
   currencyList = fiatCurrencies;
 
   portfolioList: Observable<portfolio>;
-  fiatExchange: { [key: string]: { price: number } } = {}; // key is currency 
+  fiatExchange: { [key: string]: { price: number } } = {}; // key is currency
   fiatString = this.currencyList[0].short;
   accumulatedValue: number;
   sectionValue: string;
@@ -44,7 +44,7 @@ export class Tab2Page implements OnDestroy {
 
     /*
      * horrible code but I need to set a timer so that chart.js doesn't throw an error that is
-     *  caused by emitting portfolio values and "async" chart creation.
+     * caused by emitting portfolio values and "async" chart creation.
      * This doesn't restrict the application in any way but it delays the portfolio updates
      */
     setTimeout(() => {
@@ -87,7 +87,7 @@ export class Tab2Page implements OnDestroy {
    * creates http requests to add currency keys to the fiatExchange,
    * so that the exchange rate can be determined for each currency in the portfolio
    *
-   * @param item 
+   * @param item
    */
   selectFiatCurrency(item, event?): void {
     // remove api generated information
@@ -111,8 +111,8 @@ export class Tab2Page implements OnDestroy {
 
   /**
    * check which swap string to send
-   * 
-   * @param value 
+   *
+   * @param value
    */
   decideCurrencySwapType(value: position) {
     this.fiatExchange[value.id] = { price: undefined };
@@ -125,18 +125,15 @@ export class Tab2Page implements OnDestroy {
 
   /**
    * get exchange rate for currency and insert it into dictionary
-   * 
-   * @param swapString 
-   * @param value 
-   * @param inverse 
+   *
+   * @param swapString
+   * @param value
+   * @param inverse
    */
   requestExchangeRate(swapString: string, value: position, inverse: boolean): void {
     if (this.network.Connection.NONE !== this.network.type) {
       this.requestService.universalRequest(`https://www.bitstamp.net/api/v2/ticker_hour/${swapString}/`)
         .then((response) => {
-          // when requesting with smartphone the response is saved as a string in the 'data' key
-          if (response['data']) response = JSON.parse(response['data']);
-
           // when http request has failed then try again later
           if (response['ok'] === false) {
             setTimeout(() => {
@@ -154,7 +151,9 @@ export class Tab2Page implements OnDestroy {
             } else {
               isNaN(exchangeValue) ? 0 : this.fiatExchange[value.id] = { price: Number(exchangeValue) }
             }
-          } catch { }
+          } catch {
+            console.log('[Tab2] API request failed')
+          }
           this.portfolio.sortPortfolio('value', true, { ...this.fiatExchange, [this.fiatString]: { price: 1 } });
 
           // second update hook that listens for changes by the http requests
@@ -188,7 +187,7 @@ export class Tab2Page implements OnDestroy {
    * since the calculated value is dependent on the currency, we need to convert it to every
    * available currency (eur, usd, gbp) as the future exchange rate may show a wrong result
    *
-   * @param accumulatedValue 
+   * @param accumulatedValue
    */
   calculateHistoryValue(accumulatedValue) {
     if (this.portfolio.getTempPortfolio().history.length > 0) {
@@ -230,18 +229,18 @@ export class Tab2Page implements OnDestroy {
 
   /**
    * disables either the pie or line chart
-   * 
-   * @param event 
+   *
+   * @param event
    */
   segmentChanged(event) {
     switch (event.detail.value) {
       case 'current':
-        this.sectionValue = 'current';
+        this.sectionValue = event.detail.value;
         this.historyChart.segmentChange(event.detail.value);
         this.currentChart.segmentChange(event.detail.value);
         break;
       case 'history':
-        this.sectionValue = 'history';
+        this.sectionValue = event.detail.value;
         this.historyChart.segmentChange(event.detail.value);
         this.currentChart.segmentChange(event.detail.value);
         break;
@@ -253,8 +252,8 @@ export class Tab2Page implements OnDestroy {
   /**
    * returns string representation of converted currency
    *
-   * @param id 
-   * @param amount 
+   * @param id
+   * @param amount
    */
   calculateValueString(id: string, amount: number): string {
     return this.fiatExchange[id] && this.fiatExchange[id].price ?
@@ -265,8 +264,8 @@ export class Tab2Page implements OnDestroy {
   /**
    * returns number representation of converted currency
    *
-   * @param id 
-   * @param amount 
+   * @param id
+   * @param amount
    */
   calculateValueNumber(id: string, amount: number): number {
     if (!this.fiatExchange[id] || !this.fiatExchange[id].price) return 0;

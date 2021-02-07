@@ -39,8 +39,8 @@ export class LiveDataBitstampService {
   /**
    * creates toast at the bottom of the screen
    * if seconds is 0, then it has to be closed manually
-   * @param message 
-   * @param seconds 
+   * @param message
+   * @param seconds
    */
   private async createToast(message: string, seconds: number): Promise<void> {
     this.toast = await this.toastController.create({
@@ -125,7 +125,7 @@ export class LiveDataBitstampService {
    * returns an observable that emits messages
    * from the specified event
    *
-   * @param event 
+   * @param event
    */
   private subscribeToEvent(event: string) {
     return new Observable((subscriber) => {
@@ -195,7 +195,7 @@ export class LiveDataBitstampService {
       async err => {
         try {
           if (!err.wasClean && err.type === 'close') {
-            await setTimeout(() => {
+            setTimeout(() => {
               this.webSocketConnection.unsubscribe();
               this.connect();
             }, 1500);
@@ -206,7 +206,7 @@ export class LiveDataBitstampService {
       }, // Don't log it as it does already by itself
       async () => {
         if (this.network.type === this.network.Connection.NONE) {
-          await setTimeout(() => {
+          setTimeout(() => {
             this.connect();
             console.log('WebSocked closed -- Trying to reconnect');
           }, 1500);
@@ -216,15 +216,15 @@ export class LiveDataBitstampService {
   }
 
   /**
-   * returns an observable that emits the buy and sell prices 
+   * returns an observable that emits the buy and sell prices
    * for the specified currency
-   * 
+   *
    * a throttle can be specified to limit requests to every
    * x seconds
-   * 
+   *
    * The observable tries to reconnect automatically
-   * 
-   * @param currency 
+   *
+   * @param currency
    * @param throttle
    */
   public liveSellBuy(currency: string, throttle: number = 0): Observable<{ buy: number | null, sell: number | null }> {
@@ -247,8 +247,8 @@ export class LiveDataBitstampService {
 
   /**
    * Unsubscribes from the specified websocket event
-   * 
-   * @param currency 
+   *
+   * @param currency
    */
   public unsubscribeLiveSellBuy(currency: string): void {
     this.webSocketConnection.next(this.unsubscribeObject(`order_book_${currency}`));
