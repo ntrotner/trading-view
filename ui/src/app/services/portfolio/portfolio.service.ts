@@ -99,7 +99,7 @@ export class PortfolioService {
    * @param fromCurrency designation for currency with which you pay e.g. btc
    * @param toCurrency design. for c. which you buy e.g. eur
    * @param buyrate e.g btc to eur 30000
-   * @param amount e.g. buy 5 eur 
+   * @param amount e.g. buy 5 btc 
    */
   public exchangeCurrencies(fromCurrency: string, toCurrency: string, buyrate: number, amount: number): boolean {
     buyrate = Number(buyrate.toFixed(10));
@@ -111,7 +111,7 @@ export class PortfolioService {
     // check if enough resources are available to buy it
     if (objCurrencyFrom.amount >= (amount / buyrate)) {
       this.loadedPortfolio.purchaseHistory.push(
-        new purchase(fromCurrency, toCurrency, buyrate, amount)
+        new purchase(fromCurrency, toCurrency, Number((1/buyrate).toFixed(8)), amount)
       );
 
       objCurrencyTo.amount += amount;
