@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { PopoverController, NavParams } from '@ionic/angular';
 import { PortfolioService } from '../../../services/portfolio/portfolio.service'
 import { RequestsService } from '../../../services/requests/requests.service'
+import { AlertController } from '@ionic/angular'
 
 
 @Component({
@@ -11,14 +12,14 @@ import { RequestsService } from '../../../services/requests/requests.service'
 })
 export class BuysellComponent implements OnInit {
 
-  constructor(private popoverCtrl: PopoverController, private navParams: NavParams, private portfolioService: PortfolioService, private request: RequestsService) { }
+  constructor(private popoverCtrl: PopoverController, private navParams: NavParams, private portfolioService: PortfolioService, private request: RequestsService, private alertCtrl: AlertController) { }
 
   //currencies
   cryptoCurrency:string = null;
   fiatCurrency:string = null;
 
   //amount to be bought or sold
-  amount:number
+  amountBuySell:number = 0
 
   //which box is checked
   buySellSelected:'buy'|'sell'='buy'
@@ -35,13 +36,13 @@ export class BuysellComponent implements OnInit {
   }
 
   updateAmount(event?){
-      this.amount = event.target.value
-      console.log(this.amount)
-      if(this.amount > 0 && this.amount != undefined && (typeof this.amount) == 'number'){
+      this.amountBuySell = parseFloat(event.target.value)
+      console.log(this.amountBuySell)
+      /**if(this.amountBuySell > 0 && this.amountBuySell != undefined && (typeof this.amountBuySell) == 'number'){
           this.disableButton(false)
       }else{
           this.disableButton(true)
-      }
+      }*/
   }
 
 
@@ -53,30 +54,46 @@ export class BuysellComponent implements OnInit {
       this.popoverCtrl.dismiss()
   }
 
-
+  
   /**
-   * Buy crypto with fiat.
-   * On success return true, otherwise false.
+   * Exchange amount of fiat to crypto and vice versa.
    * @param amount 
    */
-  async buy(amount:number):Promise<boolean>{
-    let currentValues = await this.request.universalRequest(`https://www.bitstamp.net/api/v2/ticker_hour/${this.cryptoCurrency+this.fiatCurrency}/`)
-    let buyrate = 1/parseFloat(currentValues['last'])
-    return this.portfolioService.exchangeCurrencies(this.fiatCurrency, this.cryptoCurrency, buyrate, amount)
+  async exchange(){
+      let exchangeSuccesfull = false
+      let buyrate
+      let currentValue = parseFloat((await this.request.universalRequest(`https://www.bitstamp.net/api/v2/ticker_hour/${this.cryptoCurrency+this.fiatCurrency}/`))['last'])
+      if(this.buySellSelected == 'buy'){
+        buyrate = 1/currentValue
+        console.log(buyrate,this.amountBuySell,this.buySellSelected, this.cryptoCurrency, this.fiatCurrency)
+        exchangeSuccesfull = this.portfolioService.exchangeCurrencies(this.fiatCurrency, this.cryptoCurrency, buyrate, this.amountBuySell)
+      }else{
+        buyrate = currentValue
+        console.log(buyrate,this.amountBuySell,this.buySellSelected, this.cryptoCurrency, this.fiatCurrency)
+        exchangeSuccesfull = this.portfolioService.exchangeCurrencies(this.cryptoCurrency, this.fiatCurrency, buyrate, this.amountBuySell)
+      }
+      this.alert(exchangeSuccesfull)
   }
 
 
-  /**
-   * Sell crypto for fiat.
-   * On success return true, otherwise false.
-   * @param amount 
-   */
-  async sell(amount:number):Promise<boolean>{
-    let currentValues = await this.request.universalRequest(`https://www.bitstamp.net/api/v2/ticker_hour/${this.cryptoCurrency+this.fiatCurrency}/`)
-    let buyrate = parseFloat(currentValues['last'])
-    return this.portfolioService.exchangeCurrencies(this.cryptoCurrency, this.fiatCurrency, buyrate, amount)
-  }
-  
+  async alert(success:boolean) {
+    let message = ''
+    if(success){
+        message = 'Exchange succesfull.'
+    }else{
+        message = 'Not enough funds in portfolio.'
+    }
 
-  
+    let alert = await this.alertCtrl.create({
+      message: message,
+      buttons: [{
+        text: 'Ok',
+        handler: () => {
+          this.dismiss();
+        }
+      }]
+    });
+    await alert.present()
+   }
+
 }
