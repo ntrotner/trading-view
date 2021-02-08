@@ -45,13 +45,8 @@ export class RequestsService {
     return this.nativeHttp.get(url,{},{}).then(
       resp => {
         let data = JSON.parse(resp['data'])
-<<<<<<< HEAD
-        return Promise.resolve(data)
-      } //if succesful resolve object
-=======
-        Promise.resolve(data)
-      }   //if succesful resolve object
->>>>>>> feature_detailview
+        return Promise.resolve(data) //if succesful resolve object
+      }
     ).catch(
       err => Promise.resolve(err) //if unsuccessful resolve object as well for error handling
     )
