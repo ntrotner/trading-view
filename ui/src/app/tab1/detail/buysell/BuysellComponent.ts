@@ -38,17 +38,9 @@ export class BuysellComponent implements OnInit {
   updateAmount(event?){
       this.amountBuySell = parseFloat(event.target.value)
       console.log(this.amountBuySell)
-      /**if(this.amountBuySell > 0 && this.amountBuySell != undefined && (typeof this.amountBuySell) == 'number'){
-          this.disableButton(false)
-      }else{
-          this.disableButton(true)
-      }*/
   }
 
 
-  disableButton(disable:boolean){
-      document.getElementById('proceed').setAttribute('disabled',disable.toString())
-  }
 
   dismiss(){
       this.popoverCtrl.dismiss()
@@ -60,23 +52,28 @@ export class BuysellComponent implements OnInit {
    * @param amount 
    */
   async exchange(){
-      let exchangeSuccesfull = false
-      let buyrate
-      let currentValue = parseFloat((await this.request.universalRequest(`https://www.bitstamp.net/api/v2/ticker_hour/${this.cryptoCurrency+this.fiatCurrency}/`))['last'])
-      if(this.buySellSelected == 'buy'){
-        buyrate = 1/currentValue
-        console.log(buyrate,this.amountBuySell,this.buySellSelected, this.cryptoCurrency, this.fiatCurrency)
-        exchangeSuccesfull = this.portfolioService.exchangeCurrencies(this.fiatCurrency, this.cryptoCurrency, buyrate, this.amountBuySell)
+      if(this.amountBuySell > 0 && (typeof this.amountBuySell)=='number' && this.amountBuySell!=NaN && this.amountBuySell!=Infinity){//only then proceed to exchange
+        console.log('here',this.amountBuySell)
+        let exchangeSuccesfull = false
+        let buyrate
+        let currentValue = parseFloat((await this.request.universalRequest(`https://www.bitstamp.net/api/v2/ticker_hour/${this.cryptoCurrency+this.fiatCurrency}/`))['last'])
+        if(this.buySellSelected == 'buy'){
+            buyrate = 1/currentValue
+            console.log(buyrate,this.amountBuySell,this.buySellSelected, this.cryptoCurrency, this.fiatCurrency)
+            exchangeSuccesfull = this.portfolioService.exchangeCurrencies(this.fiatCurrency, this.cryptoCurrency, buyrate, this.amountBuySell*buyrate)
+        }else{
+            buyrate = currentValue
+            console.log(buyrate,this.amountBuySell,this.buySellSelected, this.cryptoCurrency, this.fiatCurrency)
+            exchangeSuccesfull = this.portfolioService.exchangeCurrencies(this.cryptoCurrency, this.fiatCurrency, buyrate, this.amountBuySell*buyrate)
+        }
+        this.alertExchange(exchangeSuccesfull,this.buySellSelected,currentValue)
       }else{
-        buyrate = currentValue
-        console.log(buyrate,this.amountBuySell,this.buySellSelected, this.cryptoCurrency, this.fiatCurrency)
-        exchangeSuccesfull = this.portfolioService.exchangeCurrencies(this.cryptoCurrency, this.fiatCurrency, buyrate, this.amountBuySell)
+          this.alertError()
       }
-      this.alert(exchangeSuccesfull)
   }
 
 
-  async alert(success:boolean) {
+  async alertExchange(success:boolean,buySell:'buy'|'sell',currentValue:number) {
     let message = ''
     if(success){
         message = 'Exchange succesfull.'
@@ -85,6 +82,7 @@ export class BuysellComponent implements OnInit {
     }
 
     let alert = await this.alertCtrl.create({
+      header:'Tried to '+buySell+' at '+currentValue.toString()+' '+this.fiatCurrency+'/'+this.cryptoCurrency+'.',
       message: message,
       buttons: [{
         text: 'Ok',
@@ -94,6 +92,19 @@ export class BuysellComponent implements OnInit {
       }]
     });
     await alert.present()
+   }
+
+   async alertError(){
+    let alert = await this.alertCtrl.create({
+        message: 'Please enter a valid number.',
+        buttons: [{
+          text: 'Ok',
+          handler: () => {
+            this.dismiss();
+          }
+        }]
+      });
+      await alert.present()
    }
 
 }
