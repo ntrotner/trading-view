@@ -8,6 +8,9 @@ import { fiatCurrencies } from '../../../../../schemas/fiatcurrency'
 import { allowedCurrencySwaps } from '../../../../../schemas/allowedCurrecySwaps'
 import { OhlcHistoricalDataService } from '../../services/ohlc-historical-data/ohlc-historical-data.service'
 import { LiveDataBitstampService } from '../../services/live-data-bitstamp/live-data-bitstamp.service'
+import { BuysellComponent } from './buysell/BuysellComponent'
+import { PopoverController } from '@ionic/angular';
+
 
 @Component({
   selector: 'app-detail',
@@ -16,7 +19,7 @@ import { LiveDataBitstampService } from '../../services/live-data-bitstamp/live-
 })
 export class DetailPage implements OnInit {
 
-  constructor(private activatedRoute: ActivatedRoute, private historicalData: OhlcHistoricalDataService, private liveData: LiveDataBitstampService) { 
+  constructor(private activatedRoute: ActivatedRoute, private historicalData: OhlcHistoricalDataService, private liveData: LiveDataBitstampService, private popoverCtrl: PopoverController) { 
     //assign all selection options before lifecycle starts
     this.candleTimes = Array.from(candlestickOptions.keys())
     this.fiatCurrencies = fiatCurrencies
@@ -359,5 +362,22 @@ export class DetailPage implements OnInit {
     });
     return totalVolume
   }
+
+
+  async presentPopover(){
+    let popover = await this.popoverCtrl.create({
+      component:BuysellComponent,
+      backdropDismiss:false,
+      componentProps:{
+        cryptoCurrency:this.cryptoCurrency,
+        fiatCurrency:this.selectedFiatCurrency
+      }
+    });
+    return await popover.present()
+    
+  }
 }
+
+
+
 

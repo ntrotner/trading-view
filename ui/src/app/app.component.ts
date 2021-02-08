@@ -17,7 +17,7 @@ export class AppComponent {
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
     private liveDataBitstamp: LiveDataBitstampService,
-    private portfolio: PortfolioService
+    private portfolio: PortfolioService,
   ) {
     this.initializeApp();
   }
