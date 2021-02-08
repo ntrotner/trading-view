@@ -1,14 +1,131 @@
 <ion-header>
   <ion-toolbar>
     <ion-back-button defaultHref="/" slot="start"></ion-back-button>
-    <!--<ion-title>detail</ion-title>-->
+      <img src="svgcolor/{{cryptoCurrency}}.svg">
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
 
+  <ion-refresher slot="fixed" disabled="false"
+    (ionRefresh)="ionViewDidEnter($event)">
+    <ion-refresher-content>
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list-header class="header" lines="inset">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-button class="outerselect" [style.--padding-start]="0" [style.--padding-end]="0">
+            <ion-select class="currencySelect" value="{{selectedFiatCurrency}}"
+            (ionChange)="updateFiatCurrency($event);">
+              <ion-select-option *ngFor="let currency of fiatCurrencies" value="{{currency.short}}">
+                {{currency.short.toUpperCase()}}
+              </ion-select-option>
+            </ion-select>
+          </ion-button>
+        </ion-col>
+        <ion-col>
+          <ion-button class="outerselect" [style.--padding-start]="0" [style.--padding-end]="0">
+            <ion-select class="currencySelect" value="{{selectedCandleSelection}}"
+            (ionChange)="updateCandleSelection($event);">
+              <ion-select-option *ngFor="let option of candleTimes" value="{{option}}">
+                {{option.toUpperCase()}}
+              </ion-select-option>
+            </ion-select>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-list-header>
+
+  <ion-title class="titles">
+    Open-high-low-close chart
+  </ion-title>
   <div>
     <canvas id="candlestick" width="400" height="300"></canvas>
   </div>
+
+  <ion-title class="titles">
+    Volume chart
+  </ion-title>
+  <div>
+    <canvas id="volume" width="400" height="300"></canvas>
+  </div>
+
+  <ion-title class="titles">
+    Stats
+  </ion-title>
+  <div *ngIf="(staticData?.totalvolume!=undefined); then availableStats else unavailableStats">
+  </div>
+
+  <ng-template #availableStats>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          Combined volume {{staticData?.totalvolume.toFixed(2)}} {{cryptoCurrency.toUpperCase()}}
+        </ion-col>
+        <ion-col>
+          <ion-row>
+            High {{staticData?.highlow[0].toFixed(2)}} {{selectedFiatCurrency.toUpperCase()}}
+          </ion-row>
+          <ion-row>
+            Low {{staticData?.highlow[1].toFixed(2)}} {{selectedFiatCurrency.toUpperCase()}}
+          </ion-row>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ng-template>
+
+  <ng-template #unavailableStats>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+        </ion-col>
+        <ion-col>
+          <ion-row>
+            <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+          </ion-row>
+          <ion-row>
+            <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+          </ion-row>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ng-template> 
+
+  <ion-title class="titles">
+    Live trading
+  </ion-title>
+  <div *ngIf="(liveTrading.buy != undefined); then availableLive else unavailableLive">
+  </div>
+
+  <ng-template #availableLive>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          Buy {{liveTrading.buy.toFixed(2)}} {{selectedFiatCurrency.toUpperCase()}}
+        </ion-col>
+        <ion-col>
+          Sell {{liveTrading.sell.toFixed(2)}} {{selectedFiatCurrency.toUpperCase()}}
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ng-template>
+
+  <ng-template #unavailableLive>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+        </ion-col>
+        <ion-col>
+          <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ng-template>  
 
 </ion-content>
