@@ -1,0 +1,34 @@
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-radio-group value="{{buySellSelected}}">
+
+        <ion-list-header>
+          <ion-label>Buy or sell {{cryptoCurrency.toUpperCase()}} for {{fiatCurrency.toUpperCase()}}.</ion-label>
+        </ion-list-header>
+      
+        <ion-item lines="none">
+          <ion-label>Buy</ion-label>
+          <ion-radio slot="start" value="buy" (click)="swapSelect('buy')"></ion-radio>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-label>Sell</ion-label>
+          <ion-radio slot="start" value="sell" (click)="swapSelect('sell')"></ion-radio>
+        </ion-item>
+
+      </ion-radio-group>
+    </ion-row>
+    <ion-row>
+      <ion-input placeholder="amount {{buySellSelected=='buy'?fiatCurrency:cryptoCurrency}}" type="number" [value]="amount" (input)="updateAmount($event)" class="input"></ion-input>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-button color="danger" (click)="dismiss()">Cancel</ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button id="proceed"color="success" (click)="exchange()"disabled="false">Proceed</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

@@ -1,7 +1,10 @@
 <ion-header>
   <ion-toolbar>
     <ion-back-button defaultHref="/" slot="start"></ion-back-button>
-      <img src="svgcolor/{{cryptoCurrency}}.svg">
+    <img src="svgcolor/{{cryptoCurrency}}.svg" class="center">
+      <ion-button slot="end" id="purchase" color="warning" (click)="presentPopover()">
+        <ion-icon name="cart-outline"></ion-icon>
+      </ion-button>
   </ion-toolbar>
 </ion-header>
 
